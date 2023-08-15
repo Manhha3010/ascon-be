@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+    <property name="LOG_FILE" value="logs/mom-edu-admin"/>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+
+            <!-- keep 30 days' worth of history capped at 10GB total size -->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+
+    <root level="INFO">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE"/>
+        <!--<appender-ref ref="LOGSTASH"/>-->
+    </root>
+
+    <logger name="com.exsoft.momedumerchant" level="INFO"/>
+    <logger name="javax.activation" level="WARN"/>
+    <logger name="javax.xml.bind" level="WARN"/>
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+<!--    <logger name="org.apache.kafka" level="INFO"/>-->
+    <logger name="org.apache.catalina.startup.DigesterFactory" level="OFF"/>
+    <logger name="org.bson" level="WARN"/>
+    <logger name="org.hibernate" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.ejb.HibernatePersistence" level="OFF"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.security" level="WARN"/>
+<!--    <logger name="org.thymeleaf" level="WARN"/>-->
+<!--    <logger name="com.mongodb" level="WARN"/>-->
+
+<!--    <springProfile name="development">-->
+<!--        <root level="DEBUG">-->
+<!--            <appender-ref ref="CONSOLE"/>-->
+<!--        </root>-->
+<!--        <logger name="org.hibernate.SQL" level="DEBUG"/>-->
+<!--        <logger name="org.hibernate.cache" level="DEBUG"/>-->
+
+<!--        &lt;!&ndash;<logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>&ndash;&gt;-->
+<!--    </springProfile>-->
+
+<!--    <springProfile name="staging">-->
+<!--        <root level="DEBUG">-->
+<!--            <appender-ref ref="CONSOLE"/>-->
+<!--            <appender-ref ref="FILE"/>-->
+<!--        </root>-->
+<!--        <logger name="org.hibernate.cache" level="DEBUG"/>-->
+<!--    </springProfile>-->
+</configuration>

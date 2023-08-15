@@ -1,0 +1,48 @@
+name: development-backend
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.3.5
+      with:
+        ref: dev
+    - name: Calculate snapshot SHA
+      id: vars
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    - uses: actions/setup-java@v2.3.1
+      with:
+        java-version: 11
+        distribution: 'adopt'
+        cache: 'maven'
+    - run: |
+        mvn clean package -Dmaven.test.skip
+        cp target/momedu-crm-0.0.1-SNAPSHOT.jar target/momedu-crm-${{ steps.vars.outputs.sha_short }}.jar
+    - uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.MOMEDU_DEV_HOST }}
+        username: ${{ secrets.MOMEDU_DEV_USERNAME }}
+        password: ${{ secrets.MOMEDU_DEV_PASSWORD }}
+        port: 22
+        source: /home/runner/work/momedu-crm/momedu-crm/target/momedu-crm-${{ steps.vars.outputs.sha_short }}.jar
+        target: "/home/backend/momedu-crm/snapshot"
+        overwrite: true
+        strip_components: 2
+    - uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.MOMEDU_DEV_HOST }}
+        username: ${{ secrets.MOMEDU_DEV_USERNAME }}
+        password: ${{ secrets.MOMEDU_DEV_PASSWORD }}
+        port: 22
+        script: |
+          cd /home/backend/momedu-crm
+          kill -9 $(/usr/sbin/lsof -t -i tcp:9494) | true
+          nohup java -Dserver.port=9494 -jar /home/backend/momedu-crm/snapshot/target/momedu-crm-${{ steps.vars.outputs.sha_short }}.jar > log/momedu-crm-${{ steps.vars.outputs.sha_short }}.log  2>&1 & echo $! > momedu-crm-pid
+    - name: send telegram message
+      uses: appleboy/telegram-action@master
+      with:
+        to: -846579945
+        token: ${{ secrets.EXSOFT_TELEGRAM_BOT_TOKEN }}
+        format: markdown
+        message: "Chúc mừng **${{ github.actor }}** đã build thành công *MomEdu-Merchant* trên môi trường dev.\nVui lòng copy [Link Này](https://admmomeduapi.exsoft.vn) để ghép API"
