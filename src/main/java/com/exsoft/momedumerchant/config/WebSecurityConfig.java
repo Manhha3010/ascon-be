@@ -61,13 +61,18 @@ public class WebSecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .antMatcher("/**")
-                .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest()
-                        .authenticated()
-                )
-                .httpBasic(withDefaults());
+//        http.csrf().disable()
+//                .antMatcher("/**")
+//                .authorizeHttpRequests(authorize -> authorize
+//                        .anyRequest()
+//                        .authenticated()
+//                )
+//                .httpBasic(withDefaults());
+        http.csrf().disable().antMatcher("/**").authorizeRequests()
+                .antMatchers("/api/**").permitAll()
+                .anyRequest().permitAll()
+                .and()
+                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
