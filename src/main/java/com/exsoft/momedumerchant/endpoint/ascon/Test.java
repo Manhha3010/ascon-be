@@ -2,9 +2,9 @@ package com.exsoft.momedumerchant.endpoint.ascon;
 
 public class Test {
 
-   private Integer ASCON_KEY_SIZE =  16;
-    private Integer ASCON_NONCE_SIZE = 16;
-    private Integer ASCON_TAG_SIZE = 16;
+   private final Integer ASCON_KEY_SIZE =  16;
+    private final Integer ASCON_NONCE_SIZE = 16;
+    private final Integer ASCON_TAG_SIZE = 16;
     public final static int MAXLEN = 65536;
     private final char[] key = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,

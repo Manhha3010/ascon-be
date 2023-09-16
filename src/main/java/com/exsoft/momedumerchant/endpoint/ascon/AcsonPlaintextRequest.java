@@ -5,5 +5,7 @@ import lombok.Data;
 @Data
 public class AcsonPlaintextRequest {
 
-    String plainText;
+    String ciphertext;
+    String key;
+    String nonce;
 }
