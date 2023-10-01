@@ -6,6 +6,6 @@ import lombok.Data;
 public class AcsonPlaintextRequest {
 
     String ciphertext;
-    String key;
+    String publicKey;
     String nonce;
 }

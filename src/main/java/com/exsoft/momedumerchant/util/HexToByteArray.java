@@ -21,4 +21,12 @@ public class HexToByteArray {
         }
         return byteArray;
     }
+
+    public static String byteArrayToHexString(byte[] privateKey) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : privateKey) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
 }
