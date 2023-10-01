@@ -8,4 +8,6 @@ public class AcsonPlaintextRequest {
     String ciphertext;
     String publicKey;
     String nonce;
+    Integer cipherTextLength;
+    Integer messageLength;
 }
