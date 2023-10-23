@@ -51,6 +51,7 @@ public class Asconv12Endpoint {
         byte[] ephemeralPublicKeyBytes = X25519.publicFromPrivate(ephemeralPrivateKeyBytes);
         // generate public key
         sharedKey =  X25519.computeSharedSecret(ephemeralPrivateKeyBytes, publicKeyPartner);
+        System.err.println("sharedKey: " + StringUtil.toHexString(sharedKey));
 
         // generate shared key
 
@@ -61,6 +62,7 @@ public class Asconv12Endpoint {
 
     @PostMapping
     public ResponseEntity<String> ascon(@RequestBody AcsonPlaintextRequest request) {
+        System.err.println("request: " + request);
         byte[] ad = { /* Add your associated data here if needed */};
         Gson gson = new Gson();
         HomeStatus homeStatus ;
@@ -80,12 +82,17 @@ public class Asconv12Endpoint {
             System.out.println("Decryption failed!");
             return new ResponseEntity<>("Decryption failed!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-//        deviceControl.setFan(homeStatus.getHumidity() > 30);
-//        deviceControl.setLight(homeStatus.getTemperature() > 30);
-//        deviceControl.setPump(homeStatus.getTemperature() > 30);
-        deviceControl.setFan(Math.random()<0.5);
-        deviceControl.setLight(Math.random()<0.5);
-        deviceControl.setPump(Math.random()<0.5);
+        deviceControl.setLight(homeStatus.getIsDark() == 1);
+        deviceControl.setFan(homeStatus.getTemperature() < 32);
+        deviceControl.setPump(homeStatus.getHumidityGround() / 10 < 500);
+        deviceControl.setSprinkler(homeStatus.getHumidity() < 40);
+
+        // Chống cháy nổ
+        if (homeStatus.getTemperature() > 60){
+            deviceControl.setSprinkler(true);
+            deviceControl.setFan(false);
+        }
+
         String plaintext = gson.toJson(deviceControl);
         byte[] plaintextBytes = plaintext.getBytes();
         byte[] ciphertext = new byte[plaintext.getBytes().length + Ascon128av12.CRYPTO_ABYTES];

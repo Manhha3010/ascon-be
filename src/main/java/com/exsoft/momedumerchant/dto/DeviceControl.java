@@ -8,4 +8,5 @@ public class DeviceControl {
     private Boolean light;
     private Boolean door;
     private Boolean pump;
+    private Boolean sprinkler;
 }
