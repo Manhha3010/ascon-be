@@ -84,13 +84,17 @@ public class Asconv12Endpoint {
         }
         deviceControl.setLight(homeStatus.getIsDark() == 1);
         deviceControl.setFan(homeStatus.getTemperature() < 32);
-        deviceControl.setPump(homeStatus.getHumidityGround() / 10 < 500);
+        deviceControl.setPump(homeStatus.getHumidityGround() / 10 < 555);
+        System.err.println("homeStatus.getHumidity(): " + homeStatus.getHumidityGround() / 10);
         deviceControl.setSprinkler(homeStatus.getHumidity() < 40);
 
         // Chống cháy nổ
         if (homeStatus.getTemperature() > 60){
+            deviceControl.setLight(true);
             deviceControl.setSprinkler(true);
             deviceControl.setFan(false);
+            deviceControl.setPump(true);
+            deviceControl.setIsFire(true);
         }
 
         String plaintext = gson.toJson(deviceControl);
