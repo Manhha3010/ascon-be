@@ -1,10 +1,14 @@
 package com.exsoft.momedumerchant.endpoint.asconv12;
 
+import com.exsoft.momedumerchant.domain.DeviceState;
+import com.exsoft.momedumerchant.domain.SensorState;
 import com.exsoft.momedumerchant.dto.DeviceControl;
 import com.exsoft.momedumerchant.dto.HomeStatus;
 import com.exsoft.momedumerchant.endpoint.ascon.AcsonPlaintextRequest;
 import com.exsoft.momedumerchant.endpoint.ascon.Ascon128v1;
 import com.exsoft.momedumerchant.endpoint.ascon.DiffieHellManRequest;
+import com.exsoft.momedumerchant.repository.DeviceStateRepository;
+import com.exsoft.momedumerchant.repository.SensorStateRepository;
 import com.exsoft.momedumerchant.util.HexToByteArray;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.crypto.tink.subtle.X25519;
@@ -21,12 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.CryptoPrimitive;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Arrays;
 
 @RequestMapping("/asconv12")
 @RestController
 @RequiredArgsConstructor
 public class Asconv12Endpoint {
+
+    private final SensorStateRepository sensorStateRepository;
+    private final DeviceStateRepository deviceStateRepository;
 
     byte[] key = {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -77,16 +85,26 @@ public class Asconv12Endpoint {
         if (decryptedLength >= 0) {
             String decryptedMessage = new String(decrypted, 0, decryptedLength);
             homeStatus = gson.fromJson(decryptedMessage, HomeStatus.class);
+            SensorState sensorState = SensorState.builder()
+                    .temperature(homeStatus.getTemperature())
+                    .humidity(homeStatus.getHumidity())
+                    .humidityGround(homeStatus.getHumidityGround())
+                    .isDark(homeStatus.getIsDark() == 1)
+                    .createdAt(Instant.now())
+                    .build();
+            sensorStateRepository.save(sensorState);
             System.out.println("Decrypted Message: " + decryptedMessage);
         } else {
             System.out.println("Decryption failed!");
             return new ResponseEntity<>("Decryption failed!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         deviceControl.setLight(homeStatus.getIsDark() == 1);
-        deviceControl.setFan(homeStatus.getTemperature() < 32);
+        deviceControl.setFan(homeStatus.getTemperature() > 30);
         deviceControl.setPump(homeStatus.getHumidityGround() / 10 < 555);
         System.err.println("homeStatus.getHumidity(): " + homeStatus.getHumidityGround() / 10);
         deviceControl.setSprinkler(homeStatus.getHumidity() < 40);
+        deviceControl.setIsFire(false);
+
 
         // Chống cháy nổ
         if (homeStatus.getTemperature() > 60){
@@ -96,6 +114,15 @@ public class Asconv12Endpoint {
             deviceControl.setPump(true);
             deviceControl.setIsFire(true);
         }
+        DeviceState deviceState = DeviceState.builder()
+                .fan(deviceControl.getFan())
+                .light(deviceControl.getLight())
+                .sprinkler(deviceControl.getSprinkler())
+                .pump(deviceControl.getPump())
+                .is_fire(deviceControl.getIsFire())
+                .createdAt(Instant.now())
+                .build();
+        deviceStateRepository.save(deviceState);
 
         String plaintext = gson.toJson(deviceControl);
         byte[] plaintextBytes = plaintext.getBytes();
