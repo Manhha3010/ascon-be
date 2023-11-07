@@ -99,7 +99,7 @@ public class Asconv12Endpoint {
             return new ResponseEntity<>("Decryption failed!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         deviceControl.setLight(homeStatus.getIsDark() == 1);
-        deviceControl.setFan(homeStatus.getTemperature() > 30);
+        deviceControl.setFan(homeStatus.getTemperature() > 24);
         deviceControl.setPump(homeStatus.getHumidityGround() / 10 < 555);
         System.err.println("homeStatus.getHumidity(): " + homeStatus.getHumidityGround() / 10);
         deviceControl.setSprinkler(homeStatus.getHumidity() < 40);
